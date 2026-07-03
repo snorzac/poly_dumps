@@ -1,0 +1,56 @@
+security password min-length 10
+service password-encryption
+banner login # Unauthorized access strictly prohibited! #
+enable secret cisco12345
+username Admin01 password Admin01pa55
+
+Enable AAA and implement the following AAA services using local database
+aaa new-model
+aaa authentication enable default enable
+aaa authentication login default local enable
+
+Configure the console line with the following parameters
+line console 0
+privilege level 15
+exec-timeout 15
+logging synchronous
+login authentication default
+
+Configure the VTY (Virtual Terminal) lines 0-15 with the following parameters
+line vty 0 15
+privilege level 15
+exec-timeout 15
+logging synchronous
+transport input ssh
+login authentication default
+
+Configure the router to log login activities with the following parameters
+login block-for 60 attempts 2 within 30
+login on-failure log
+login on-success log
+
+Configure the router as SSH (Secure Shell) server with the following parameters
+no ip domain-lookup
+ip domain-name ccnasecurity.com
+crypto key generate rsa
+1024
+ip ssh time-out 90
+ip ssh version 2
+ip ssh authentication-retries 2
+Verification (from ISP Web/DNS Server command prompt):
+ssh -l Admin01 165.16.36.129
+Password: cisco12345
+
+Configure the following parameters at NTP clients (both HQ perimeter and BRANCH routers):
+ntp server 165.16.36.10 key 1
+ntp authenticate
+ntp trusted-key 1
+ntp authentication-key 1 md5 NTPpassword
+ntp update-calendar
+Verifications:
+show clock
+show ntp status
+show ntp associations
+
+Configure Syslog support at BRANCH router as follows
+service timestamps log datetime msec

@@ -1,0 +1,36 @@
+zone security INSIDE
+exit
+zone security OUTSIDE
+exit
+
+class-map type inspect match-any ALLOWED-PROTOCOLS
+match protocol tcp
+match protocol udp
+match protocol icmp
+exit
+
+policy-map type inspect INSIDE-TO-OUTSIDE
+class type inspect ALLOWED-PROTOCOLS
+inspect
+exit
+
+zone-pair security INSIDE-TO-OUTSIDE source INSIDE destination OUTSIDE
+service-policy type inspect INSIDE-TO-OUTSIDE
+
+access-list 101 permit ip any 10.38.98.0 0.0.0.127
+class-map type inspect match-all ALLOWED-TRAFFIC
+match access-group 101
+match class-map ALLOWED-PROTOCOLS
+exit
+
+policy-map type inspect OUTSIDE-TO-INSIDE
+class type inspect ALLOWED-TRAFFIC
+inspect
+
+zone-pair security OUTSIDE-TO-INSIDE source OUTSIDE destination INSIDE
+service-policy type inspect OUTSIDE-TO-INSIDE
+
+interface g0/1
+zone-member security INSIDE
+interface s0/0/1
+zone-member security OUTSIDE

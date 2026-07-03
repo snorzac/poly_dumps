@@ -1,0 +1,75 @@
+zone security INSIDE
+exit
+zone security OUTSIDE
+exit
+zone security DMZ
+exit
+
+access-list 101 permit ip any 10.38.96.0 0.0.1.255
+
+class-map type inspect match-any ALLOWED-PROTOCOLS
+match protocol tcp
+match protocol udp
+match protocol icmp
+
+class-map type inspect match-all ALLOWED-INSIDE-TRAFFIC
+match access-group 101
+match class-map ALLOWED-PROTOCOLS
+
+policy-map type inspect INSIDE-TO-OUTSIDE
+class type inspect ALLOWED-PROTOCOLS
+inspect
+
+policy-map type inspect OUTSIDE-TO-INSIDE
+class type inspect ALLOWED-INSIDE-TRAFFIC
+inspect
+
+zone-pair security INSIDE-TO-OUTSIDE source INSIDE destination OUTSIDE
+service-policy type inspect INSIDE-TO-OUTSIDE
+
+zone-pair security OUTSIDE-TO-INSIDE source OUTSIDE destination INSIDE
+service-policy type inspect OUTSIDE-TO-INSIDE
+
+
+policy-map type inspect INSIDE-TO-DMZ
+class type inspect ALLOWED-PROTOCOLS
+inspect
+
+policy-map type inspect DMZ-TO-INSIDE
+class type inspect ALLOWED-INSIDE-TRAFFIC
+inspect
+
+zone-pair security INSIDE-TO-DMZ source INSIDE destination DMZ
+service-policy type inspect INSIDE-TO-DMZ
+
+zone-pair security DMZ-TO-INSIDE source DMZ destination INSIDE
+service-policy type inspect DMZ-TO-INSIDE
+
+access-list 102 permit ip any 10.38.98.128 0.0.0.31
+
+class-map type inspect match-all ALLOWED-DMZ-TRAFFIC
+match access group 102
+match class-map ALLOWED-PROTOCOLS
+
+policy-map type inspect OUTSIDE-TO-DMZ
+class type inspect ALLOWED-DMZ-TRAFFIC
+inspect
+
+policy-map type inspect DMZ-TO-OUTSIDE
+class type inspect ALLOWED-PROTOCOLS
+inspect
+
+zone-pair security OUTSIDE-TO-DMZ source OUTSIDE destination DMZ
+service-policy type inspect OUTSIDE-TO-DMZ
+
+zone-pair security DMZ-TO-OUTSIDE source DMZ destination OUTSIDE
+service-policy type inspect DMZ-TO-OUTSIDE
+
+interface g0/0
+zone-member security OUTSIDE
+
+interface g0/1
+zone-member security INSIDE
+
+interface g0/2
+zone-member security DMZ

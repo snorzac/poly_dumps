@@ -1,0 +1,29 @@
+Jiayi Router Configuration
+
+service password-encryption
+security passwords min-length 10
+banner motd ^CUnauthorized access strictly prohibited!^C
+no logging console
+login block-for 60 attempts 2 within 30
+login on-failure log
+login on-success log
+enable secret cisco12345
+username Admin01 password Admin01pa55
+aaa new-model
+aaa authentication login default local
+ip ssh version 2
+ip ssh authentication-retries 2
+ip ssh time-out 90
+no ip domain-lookup
+ip domain-name ccnasecurity.com
+line con 0
+exec-timeout 15 0
+logging synchronous
+login authentication default
+privilege level 15
+line vty 5 15
+exec-timeout 15 0
+logging synchronous
+login authentication default
+transport input ssh
+privilege level 15

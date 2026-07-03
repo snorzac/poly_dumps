@@ -1,0 +1,65 @@
+service password-encryption
+banner motd # Unauthorized access strictly prohibited! #
+enable secret cisco12345
+username Admin01 password Admin01pa55
+
+Configure the console line with the following parameters
+line con 0
+privilege level 15
+exec-timeout 15 0
+logging synchronous
+login local
+
+Configure the VTY (virtual terminal) lines 0-15 with the following parameters
+line vty 5 15
+privilege level 15
+exec-timeout 15 0
+logging synchronous
+login local
+transport input ssh
+
+Configure the switch as SSH (Secure Shell) server with the following parameters
+no ip domain-lookup
+ip domain-name ccnasecurity.com
+crypto key generate rsa
+1024
+ip ssh version 2
+ip ssh time-out 90
+ip ssh authentication-retries 2
+
+Disable trunking on all switch ports except G0/0 amd G0/1 (i.e. set them to be access ports, and assume Gigabit Ethernet ports are reserved for trunk ports)
+interface range f0/1-24
+switchport mode access
+no switchport trunk native vlan
+
+Enable STP (Spanning Tree Protocol) PortFast mode on all switch ports except G0/0 and G0/1
+interface range f0/1-24
+spanning-tree portfast
+
+Enable BPDU (Bridge Protocol Data Unit) guard on all switch access ports accept G0/0 and G0/1
+interface range f0/1-24
+spanning-tree bpduguard enable
+
+Apply basic port security on all switch access ports with the following parameters
+switchport port-security
+switchport port-security maximum 2
+switchport port-security violation shutdown
+switchport port-security mac-address sticky
+
+**HQ SWITCH**
+interface range f0/1-17
+shutdown
+
+interface range f0/20-23
+shutdown
+
+**BRANCH SWITCH**
+interface range f0/1-4
+shutdown
+
+interface f0/6-17
+shutdown
+
+interface f0/20-24
+shutdown
+
